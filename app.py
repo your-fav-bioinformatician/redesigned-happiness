@@ -33,7 +33,7 @@ if not st.session_state.authenticated:
     st.title("Access Restricted")
     pwd = st.text_input("Please enter the password to access this tool:", type="password")
     if st.button("Login"):
-        if pwd == "iamwisam":
+        if pwd == "putinsaiddonaldtrumpisagenius":
             st.session_state.authenticated = True
             st.rerun()
         else:
