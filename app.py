@@ -10,6 +10,10 @@ from matplotlib.patches import FancyBboxPatch, RegularPolygon
 from matplotlib.colors import Normalize
 from PIL import Image
 
+# New imports for downloading and extracting
+import gdown
+import zipfile
+
 from torch_geometric.data.data import DataEdgeAttr
 
 # Allow safe loading of torch_geometric specific objects
@@ -39,6 +43,42 @@ if not st.session_state.authenticated:
 # Rest of the app runs only if authenticated
 st.title("Cytogenetics AI Review")
 
+# ===================== Data Download =====================
+@st.cache_resource
+def download_and_extract_data():
+    # Replace these IDs with the actual File IDs from your Google Drive links
+    datasets_file_id = '1l93y4phlJXdtTME7zKvKRRwmvp4v1GFc'
+    segments_file_id = '1PCJO7UxFK4p0a30zb-beHfFtI-QU05O0'
+    
+    datasets_url = f'https://drive.google.com/uc?id={datasets_file_id}'
+    segments_url = f'https://drive.google.com/uc?id={segments_file_id}'
+    
+    # --- 1. Handle Datasets ---
+    if not os.path.exists('./datasets'):
+        with st.spinner('Downloading datasets.zip from Google Drive...'):
+            gdown.download(datasets_url, 'datasets.zip', quiet=False)
+            
+            with st.spinner('Extracting datasets...'):
+                with zipfile.ZipFile('datasets.zip', 'r') as zip_ref:
+                    zip_ref.extractall('.')
+                    
+            if os.path.exists('datasets.zip'):
+                os.remove('datasets.zip')
+                
+    # --- 2. Handle Segments ---
+    if not os.path.exists('./segments'):
+        with st.spinner('Downloading segments.zip from Google Drive...'):
+            gdown.download(segments_url, 'segments.zip', quiet=False)
+            
+            with st.spinner('Extracting segments...'):
+                with zipfile.ZipFile('segments.zip', 'r') as zip_ref:
+                    zip_ref.extractall('.')
+                    
+            if os.path.exists('segments.zip'):
+                os.remove('segments.zip')
+
+# Trigger the download function
+download_and_extract_data()
 # ===================== Helpers =====================
 def format_chr(c):
     return "X" if c == 23 else "Y" if c == 24 else str(c)
@@ -319,6 +359,7 @@ def draw_hex_graph(data, ax):
     ax.set_title("Node graph", fontsize=9, pad=4, color="#555")
 
 # ===================== Ideogram ===========================================
+
 def draw_ideogram(data, ax):
     s      = chromosome_stats(data)
 
@@ -463,7 +504,7 @@ def draw_ideogram(data, ax):
 
 # ===================== UI =================================================
 if not os.path.exists(TRIAGE_CACHE):
-    st.info("No triage cache found.")
+    st.info(f"No triage cache found at {TRIAGE_CACHE}. Attempting to download data if not present...")
     st.stop()
 
 if "idx" not in st.session_state:
