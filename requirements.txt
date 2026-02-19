@@ -77,3 +77,4 @@ urllib3==2.6.3
 watchdog==6.0.0
 xxhash==3.6.0
 yarl==1.22.0
+gdown
